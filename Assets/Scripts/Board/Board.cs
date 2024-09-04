@@ -26,6 +26,7 @@ public class Board
     private int m_matchMin;
 
     private Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
+    private NormalItemsSO normalItems;
 
     public Board(Transform transform, GameSettings gameSettings)
     {
@@ -38,11 +39,15 @@ public class Board
 
         m_cells = new Cell[boardSizeX, boardSizeY];
 
-        foreach (var name in Constants.PREFAB_NORMAL_NAMES)
+        normalItems = Resources.Load<NormalItemsSO>(Constants.GAME_SPRITES_PATH);
+
+        for (int i = 0; i < Constants.PREFAB_NORMAL_NAMES.Length; ++i)
         {
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(Constants.PREFAB_NORMAL_NAMES[i]))
             {
-                prefabs.Add(name, Resources.Load<GameObject>(name));
+                SpriteRenderer renderer = Resources.Load<SpriteRenderer>(Constants.PREFAB_NORMAL_NAMES[i]);
+                renderer.sprite = normalItems.sprites[i];
+                prefabs.Add(Constants.PREFAB_NORMAL_NAMES[i], renderer.gameObject);
             }
         }
 

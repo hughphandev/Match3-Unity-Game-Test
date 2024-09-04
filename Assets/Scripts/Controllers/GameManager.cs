@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 public class GameManager : MonoBehaviour
 {
@@ -45,6 +46,8 @@ public class GameManager : MonoBehaviour
 
     private LevelCondition m_levelCondition;
 
+    private eLevelMode currentMode;
+
     private void Awake()
     {
         State = eStateGame.SETUP;
@@ -71,7 +74,7 @@ public class GameManager : MonoBehaviour
     {
         State = state;
 
-        if(State == eStateGame.PAUSE)
+        if (State == eStateGame.PAUSE)
         {
             DOTween.PauseAll();
         }
@@ -83,6 +86,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadLevel(eLevelMode mode)
     {
+        currentMode = mode;
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
         m_boardController.StartGame(this, m_gameSettings);
 
@@ -100,6 +104,12 @@ public class GameManager : MonoBehaviour
         m_levelCondition.ConditionCompleteEvent += GameOver;
 
         State = eStateGame.GAME_STARTED;
+    }
+
+    public void ReloadLevel()
+    {
+        ClearLevel();
+        LoadLevel(currentMode);
     }
 
     public void GameOver()

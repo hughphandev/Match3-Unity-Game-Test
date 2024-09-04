@@ -81,7 +81,11 @@ public class Board
             }
         }
 
-        //set neighbours
+        SetNeighbours();
+    }
+
+    void SetNeighbours()
+    {
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
@@ -92,7 +96,6 @@ public class Board
                 if (x > 0) m_cells[x, y].NeighbourLeft = m_cells[x - 1, y];
             }
         }
-
     }
 
     internal void Fill()
@@ -161,6 +164,9 @@ public class Board
 
     internal void FillGapsWithNewItems()
     {
+        //NOTE: Count numbers of each item when fill for now, can optimize further by only count once on start up and update whenever add or destroy items.
+        int[] counts = CountTypes();
+
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
@@ -168,16 +174,57 @@ public class Board
                 Cell cell = m_cells[x, y];
                 if (!cell.IsEmpty) continue;
 
+
                 NormalItem item = new NormalItem();
 
-                item.SetType(Utils.GetRandomNormalType());
+                int minIndex = 0;
+                NormalItem neighbourBottom = cell.NeighbourBottom?.Item as NormalItem;
+                NormalItem neighbourUp = cell.NeighbourUp?.Item as NormalItem;
+                NormalItem neighbourLeft = cell.NeighbourLeft?.Item as NormalItem;
+                NormalItem neighbourRight = cell.NeighbourRight?.Item as NormalItem;
+                for (int i = 0; i < counts.Length; ++i)
+                {
+                    if (neighbourBottom != null && i == (int)neighbourBottom.ItemType) continue;
+                    if (neighbourUp != null && i == (int)neighbourUp.ItemType) continue;
+                    if (neighbourLeft != null && i == (int)neighbourLeft.ItemType) continue;
+                    if (neighbourRight != null && i == (int)neighbourRight.ItemType) continue;
+
+                    if (counts[i] < counts[minIndex])
+                    {
+                        minIndex = i;
+                    }
+                }
+
+                item.SetType((NormalItem.eNormalType)minIndex);
                 item.SetView(prefabs);
                 item.SetViewRoot(m_root);
 
                 cell.Assign(item);
                 cell.ApplyItemPosition(true);
+                ++counts[minIndex];
+                SetNeighbours();
             }
         }
+    }
+
+    int[] CountTypes()
+    {
+        int[] counts = new int[Enum.GetValues(typeof(NormalItem.eNormalType)).Length];
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                Cell cell = m_cells[x, y];
+                if (cell.IsEmpty) continue;
+                var normal = cell.Item as NormalItem;
+                if (normal != null)
+                {
+                    ++counts[(int)normal.ItemType];
+                }
+
+            }
+        }
+        return counts;
     }
 
     internal void ExplodeAllItems()

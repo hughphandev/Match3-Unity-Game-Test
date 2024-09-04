@@ -14,6 +14,12 @@ public class BonusItem : Item
     }
 
     public eBonusType ItemType;
+    static Action<BonusItem>[] ActivateBonusActions = new Action<BonusItem>[] {
+            null,
+            ExplodeHorizontalLine,
+            ExplodeVerticalLine,
+            ExplodeBomb,
+        };
 
     public void SetType(eBonusType type)
     {
@@ -22,23 +28,7 @@ public class BonusItem : Item
 
     protected override string GetPrefabName()
     {
-        string prefabname = string.Empty;
-        switch (ItemType)
-        {
-            case eBonusType.NONE:
-                break;
-            case eBonusType.HORIZONTAL:
-                prefabname = Constants.PREFAB_BONUS_HORIZONTAL;
-                break;
-            case eBonusType.VERTICAL:
-                prefabname = Constants.PREFAB_BONUS_VERTICAL;
-                break;
-            case eBonusType.ALL:
-                prefabname = Constants.PREFAB_BONUS_BOMB;
-                break;
-        }
-
-        return prefabname;
+        return Constants.PREFAB_BONUS_NAMES[(int)ItemType];
     }
 
     internal override bool IsSameType(Item other)
@@ -57,48 +47,36 @@ public class BonusItem : Item
 
     private void ActivateBonus()
     {
-        switch (ItemType)
-        {
-            case eBonusType.HORIZONTAL:
-                ExplodeHorizontalLine();
-                break;
-            case eBonusType.VERTICAL:
-                ExplodeVerticalLine();
-                break;
-            case eBonusType.ALL:
-                ExplodeBomb();
-                break;
-
-        }
+        ActivateBonusActions[(int)ItemType]?.Invoke(this);
     }
 
-    private void ExplodeBomb()
+    private static void ExplodeBomb(BonusItem item)
     {
         List<Cell> list = new List<Cell>();
-        if (Cell.NeighbourBottom) list.Add(Cell.NeighbourBottom);
-        if (Cell.NeighbourUp) list.Add(Cell.NeighbourUp);
-        if (Cell.NeighbourLeft)
+        if (item.Cell.NeighbourBottom) list.Add(item.Cell.NeighbourBottom);
+        if (item.Cell.NeighbourUp) list.Add(item.Cell.NeighbourUp);
+        if (item.Cell.NeighbourLeft)
         {
-            list.Add(Cell.NeighbourLeft);
-            if (Cell.NeighbourLeft.NeighbourUp)
+            list.Add(item.Cell.NeighbourLeft);
+            if (item.Cell.NeighbourLeft.NeighbourUp)
             {
-                list.Add(Cell.NeighbourLeft.NeighbourUp);
+                list.Add(item.Cell.NeighbourLeft.NeighbourUp);
             }
-            if (Cell.NeighbourLeft.NeighbourBottom)
+            if (item.Cell.NeighbourLeft.NeighbourBottom)
             {
-                list.Add(Cell.NeighbourLeft.NeighbourBottom);
+                list.Add(item.Cell.NeighbourLeft.NeighbourBottom);
             }
         }
-        if (Cell.NeighbourRight)
+        if (item.Cell.NeighbourRight)
         {
-            list.Add(Cell.NeighbourRight);
-            if (Cell.NeighbourRight.NeighbourUp)
+            list.Add(item.Cell.NeighbourRight);
+            if (item.Cell.NeighbourRight.NeighbourUp)
             {
-                list.Add(Cell.NeighbourRight.NeighbourUp);
+                list.Add(item.Cell.NeighbourRight.NeighbourUp);
             }
-            if (Cell.NeighbourRight.NeighbourBottom)
+            if (item.Cell.NeighbourRight.NeighbourBottom)
             {
-                list.Add(Cell.NeighbourRight.NeighbourBottom);
+                list.Add(item.Cell.NeighbourRight.NeighbourBottom);
             }
         }
 
@@ -108,11 +86,11 @@ public class BonusItem : Item
         }
     }
 
-    private void ExplodeVerticalLine()
+    private static void ExplodeVerticalLine(BonusItem item)
     {
         List<Cell> list = new List<Cell>();
 
-        Cell newcell = Cell;
+        Cell newcell = item.Cell;
         while (true)
         {
             Cell next = newcell.NeighbourUp;
@@ -122,7 +100,7 @@ public class BonusItem : Item
             newcell = next;
         }
 
-        newcell = Cell;
+        newcell = item.Cell;
         while (true)
         {
             Cell next = newcell.NeighbourBottom;
@@ -139,11 +117,11 @@ public class BonusItem : Item
         }
     }
 
-    private void ExplodeHorizontalLine()
+    private static void ExplodeHorizontalLine(BonusItem item)
     {
         List<Cell> list = new List<Cell>();
 
-        Cell newcell = Cell;
+        Cell newcell = item.Cell;
         while (true)
         {
             Cell next = newcell.NeighbourRight;
@@ -153,7 +131,7 @@ public class BonusItem : Item
             newcell = next;
         }
 
-        newcell = Cell;
+        newcell = item.Cell;
         while (true)
         {
             Cell next = newcell.NeighbourLeft;

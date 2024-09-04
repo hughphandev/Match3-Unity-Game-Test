@@ -25,6 +25,8 @@ public class Board
 
     private int m_matchMin;
 
+    private Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
+
     public Board(Transform transform, GameSettings gameSettings)
     {
         m_root = transform;
@@ -35,6 +37,22 @@ public class Board
         this.boardSizeY = gameSettings.BoardSizeY;
 
         m_cells = new Cell[boardSizeX, boardSizeY];
+
+        foreach (var name in Constants.PREFAB_NORMAL_NAMES)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                prefabs.Add(name, Resources.Load<GameObject>(name));
+            }
+        }
+
+        foreach (var name in Constants.PREFAB_BONUS_NAMES)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                prefabs.Add(name, Resources.Load<GameObject>(name));
+            }
+        }
 
         CreateBoard();
     }
@@ -101,7 +119,7 @@ public class Board
                 }
 
                 item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
-                item.SetView();
+                item.SetView(prefabs);
                 item.SetViewRoot(m_root);
 
                 cell.Assign(item);
@@ -148,7 +166,7 @@ public class Board
                 NormalItem item = new NormalItem();
 
                 item.SetType(Utils.GetRandomNormalType());
-                item.SetView();
+                item.SetView(prefabs);
                 item.SetViewRoot(m_root);
 
                 cell.Assign(item);
@@ -282,7 +300,7 @@ public class Board
                 cellToConvert = matches[rnd];
             }
 
-            item.SetView();
+            item.SetView(prefabs);
             item.SetViewRoot(m_root);
 
             cellToConvert.Free();
@@ -350,7 +368,7 @@ public class Board
         var dir = GetMatchDirection(matches);
 
         var bonus = matches.Where(x => x.Item is BonusItem).FirstOrDefault();
-        if(bonus == null)
+        if (bonus == null)
         {
             return matches;
         }

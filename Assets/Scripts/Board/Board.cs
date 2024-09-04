@@ -178,6 +178,7 @@ public class Board
                 NormalItem item = new NormalItem();
 
                 int minIndex = 0;
+                int minCount = int.MaxValue;
                 NormalItem neighbourBottom = cell.NeighbourBottom?.Item as NormalItem;
                 NormalItem neighbourUp = cell.NeighbourUp?.Item as NormalItem;
                 NormalItem neighbourLeft = cell.NeighbourLeft?.Item as NormalItem;
@@ -189,9 +190,10 @@ public class Board
                     if (neighbourLeft != null && i == (int)neighbourLeft.ItemType) continue;
                     if (neighbourRight != null && i == (int)neighbourRight.ItemType) continue;
 
-                    if (counts[i] < counts[minIndex])
+                    if (counts[i] < minCount)
                     {
                         minIndex = i;
+                        minCount = counts[i];
                     }
                 }
 
